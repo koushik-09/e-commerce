@@ -4,7 +4,7 @@ import com.resotechsolutions.ecommerce.entity.User;
 import com.resotechsolutions.ecommerce.entity.UserDetails;
 
 public interface UserDao {
-    User findUserByEmail(String email);
+    User findUserById(long id);
 
     void saveUser(User user);
 

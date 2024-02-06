@@ -9,11 +9,17 @@ import javax.persistence.*;
 public class UserDetails {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private Long userId;
+
     @Column(name = "email")
     private String email;
     @Column(name = "name")
     private String name;
 
+    @Transient
+    private String token;
     @Column(name = "gender")
     private char gender;
 
@@ -29,10 +35,9 @@ public class UserDetails {
     @Column(name = "isUser")
     private boolean isUser;
 
-    @OneToOne
-    @JoinColumn(name = "email", referencedColumnName = "user_email")
+    @OneToOne( cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
     private User user;
-
 
     public UserDetails(){
 
@@ -43,6 +48,14 @@ public class UserDetails {
         this.name = name;
         this.gender = gender;
         this.phno = phno;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getEmail() {
@@ -101,6 +114,12 @@ public class UserDetails {
         isUser = user;
     }
 
+    public void setToken(String token){
+        this.token = token;
+    }
+    public String getToken(){
+        return token;
+    }
     public void setUserDetails(UserHandler userHandler){
         this.email = userHandler.getEmail();
         this.name = userHandler.getName();
@@ -110,14 +129,15 @@ public class UserDetails {
         this.isUser = userHandler.isUser();
     }
 
-
     @Override
     public String toString() {
         return "UserDetails{" +
-                "email='" + email + '\'' +
+                "userId=" + userId +
+                ", email='" + email + '\'' +
                 ", name='" + name + '\'' +
                 ", gender=" + gender +
                 ", phno=" + phno +
+                ", token=" + token +
                 ", isActive=" + isActive +
                 ", isAdmin=" + isAdmin +
                 ", isUser=" + isUser +

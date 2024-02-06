@@ -22,6 +22,8 @@ public class UserHandler {
 
     private boolean isUser;
 
+    private String token;
+
     public UserHandler(){
 
     }
@@ -101,6 +103,14 @@ public class UserHandler {
         isUser = user;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
     @Override
     public String toString() {
         return "UserHandler{" +
@@ -112,6 +122,7 @@ public class UserHandler {
                 ", isActive=" + isActive +
                 ", isAdmin=" + isAdmin +
                 ", isUser=" + isUser +
+                ", token='" + token + '\'' +
                 '}';
     }
 }

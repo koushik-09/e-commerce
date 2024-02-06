@@ -6,7 +6,7 @@ import com.resotechsolutions.ecommerce.entity.UserHandler;
 import com.resotechsolutions.ecommerce.response.BaseResponse;
 
 public interface UserService {
-    User findUserByEmail(String email);
+    User findUserById(long id);
 
     BaseResponse saveUser(UserHandler userHandler);
     UserDetails findUserDetailByEmail(String email);

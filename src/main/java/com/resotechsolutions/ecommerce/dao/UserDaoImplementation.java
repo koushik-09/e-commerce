@@ -21,11 +21,9 @@ public class UserDaoImplementation implements UserDao{
     }
 
     @Override
-    public User findUserByEmail(String email) {
-
-        //entityManager.createNativeQuery("SQl statement").getSingleResult();
-        TypedQuery<User> theQuery = entityManager.createQuery("from User where email =:theData",User.class);
-        theQuery.setParameter("theData",email);
+    public User findUserById(long id) {
+        TypedQuery<User> theQuery = entityManager.createQuery("from User where userId = :theData", User.class);
+        theQuery.setParameter("theData",id);
         List<User> list = theQuery.getResultList();
         return list.isEmpty() ? null : list.get(0);
     }
@@ -37,8 +35,22 @@ public class UserDaoImplementation implements UserDao{
 
     @Override
     public UserDetails findUserDetailByEmail(String email) {
-        User user = findUserByEmail(email);
-        return (user != null) ? user.getUserDetails() : null;
+        TypedQuery<UserDetails> theQuery = entityManager.createQuery("from UserDetails where email = :theData", UserDetails.class);
+        theQuery.setParameter("theData",email);
+        List<UserDetails> list = theQuery.getResultList();
+        return list.isEmpty() ? null : list.get(0);
     }
+
+//    @Transactional
+//    public Long getLastInsertedId() {
+//        // Assuming your JPA entity is named "YourEntity" and has an auto-incrementing ID
+//        User entity = new User("abc");
+//        entityManager.persist(entity);
+//
+//        // The ID will be populated after the transaction is committed
+//        entityManager.flush();
+//
+//        return entity.getUserId();
+//    }
 
 }

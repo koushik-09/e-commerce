@@ -1,6 +1,8 @@
 package com.resotechsolutions.ecommerce.service;
 
+import com.resotechsolutions.ecommerce.config.TokenGenerator;
 import com.resotechsolutions.ecommerce.dao.UserDaoImplementation;
+import com.resotechsolutions.ecommerce.entity.Token;
 import com.resotechsolutions.ecommerce.entity.User;
 import com.resotechsolutions.ecommerce.entity.UserDetails;
 import com.resotechsolutions.ecommerce.entity.UserHandler;
@@ -20,17 +22,23 @@ public class UserServiceImplementation implements UserService{
     private ResponseHandler responseHandler;
     private BCryptPasswordEncoder passwordEncoder;
 
+    private TokenGenerator tokenGenerator;
+
     @Autowired
-    public UserServiceImplementation(UserDaoImplementation theUserDaoImplementation,BCryptPasswordEncoder thePasswordEncoder,ResponseHandler theResponseHandler){
+    public UserServiceImplementation(UserDaoImplementation theUserDaoImplementation,
+                                     BCryptPasswordEncoder thePasswordEncoder,
+                                     ResponseHandler theResponseHandler,
+                                     TokenGenerator theTokenGenerator){
         this.userDaoImplementation = theUserDaoImplementation;
         this.passwordEncoder = thePasswordEncoder;
         this.responseHandler = theResponseHandler;
+        this.tokenGenerator = theTokenGenerator;
     }
 
 
     @Override
-    public User findUserByEmail(String email) {
-        return userDaoImplementation.findUserByEmail(email);
+    public User findUserById(long id) {
+        return userDaoImplementation.findUserById(id);
     }
 
     @Override
@@ -53,8 +61,12 @@ public class UserServiceImplementation implements UserService{
 
         user.setUserDetails(userDetails);
 
-        String email = user.getEmail();
-        User tempUser = findUserByEmail(email);
+        Token token = new Token();
+        token.setToken(userHandler);
+        user.setToken(token);
+
+        String email = userDetails.getEmail();
+        UserDetails tempUser = findUserDetailByEmail(email);
 
         if(tempUser == null){
 
@@ -62,9 +74,18 @@ public class UserServiceImplementation implements UserService{
             String encryptedPassword = passwordEncoder.encode(password);
             user.setPassword(encryptedPassword);
 
+            String generatedToken = tokenGenerator.generateToken(email);
+            token.setToken(generatedToken);
+            System.out.println(user.toString());
+            System.out.println(user.getUserDetails().toString());
+            System.out.println(user.getToken().toString());
+
+            tempUser = user.getUserDetails();
+            tempUser.setToken(generatedToken);
+            System.out.println(tempUser.toString());
             userDaoImplementation.saveUser(user);
 
-            return responseHandler.setMessageResponse("Registration Successful", HttpStatus.CREATED.value(), user.getUserDetails());
+            return responseHandler.setMessageResponse("Registration Successful", HttpStatus.CREATED.value(), tempUser);
         }
 
         String message = "User already exists with email "+email;
@@ -74,18 +95,22 @@ public class UserServiceImplementation implements UserService{
     @Override
     public BaseResponse validateUser(User user) {
 
-        User tempUser = findUserByEmail(user.getEmail());
-
-        if(tempUser == null){
+        UserDetails tempUserDetail = findUserDetailByEmail(user.getEmail());
+        if(tempUserDetail == null){
 
             String message = "User Does not exist with email "+user.getEmail();
-            return responseHandler.setMessageResponse(message,HttpStatus.NOT_FOUND.value(),user);
+            return responseHandler.setMessageResponse(message,HttpStatus.NOT_FOUND.value(),null);
         }
-
+        User tempUser = findUserById(tempUserDetail.getUserId());
         if(passwordEncoder.matches(user.getPassword(),tempUser.getPassword())){
-            return responseHandler.setMessageResponse("Login Successful",HttpStatus.OK.value(),tempUser.getUserDetails());
+            Token tempToken = tempUser.getToken();
+            tempUserDetail = tempUser.getUserDetails();
+            tempUserDetail.setToken(tempToken.getToken());
+            System.out.println(tempUserDetail);
+            return responseHandler.setMessageResponse("Login Successful",HttpStatus.OK.value(),tempUserDetail);
         }
 
-        return responseHandler.setMessageResponse("Invalid Password",HttpStatus.UNAUTHORIZED.value(),user);
+        return responseHandler.setMessageResponse("Invalid Password",HttpStatus.UNAUTHORIZED.value(),null);
     }
+
 }
